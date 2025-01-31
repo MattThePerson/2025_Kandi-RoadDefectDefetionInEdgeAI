@@ -3,8 +3,7 @@ runs/
 weights/
 temp/
 .vscode/
-.venv/
-venv/
+*venv*/
 *.pt
 testing*
 bus.jpg

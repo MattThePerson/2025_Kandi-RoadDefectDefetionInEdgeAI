@@ -25,8 +25,8 @@ random.seed(0)
 
 
 def main(args: argparse.Namespace):
-    dataset_unprocessed = r'C:\Users\stirl\MyDocuments\Code\ML\datasets\RDD2022'
-    dataset_processed =   r'C:\Users\stirl\MyDocuments\Code\ML\datasets\RDD2022_preprocessed' # location of processed dataset
+    dataset_unprocessed = r'..\datasets\RDD2022'
+    dataset_processed =   r'..\datasets\RDD2022_preprocessed' # location of processed dataset
 
     subfolders = list(Path(dataset_unprocessed).glob('*'))
 
@@ -49,11 +49,6 @@ def main(args: argparse.Namespace):
 
     print('\nDone. Pre-processed {:_} images in {:.1f}s'.format(handled_count, (time.time()-start)))
     print('Preprocessed data folder: "{}"'.format(str(dataset_processed)))
-    
-    # TEMP !!!
-    global label_map
-    for k, v in label_map.items():
-        print(k, ': ', v)
     
     return
 
