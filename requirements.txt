@@ -1,3 +1,2 @@
-ultralytics
-numpy
-ipykernel
+ultralytics==8.3.70
+ipykernel==6.29.5

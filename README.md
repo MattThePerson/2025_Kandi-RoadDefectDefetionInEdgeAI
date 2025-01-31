@@ -8,8 +8,12 @@ Training YOLOv8m on the [RDD2022 dataset](https://figshare.com/articles/dataset/
 
 ## Dependencies
 
-For local testing, set up virtual environment (eg. venv) and then install deps in the following order:
+There are two main dependencies, PyTorch and ultralytics (for YOLO, which requires PyTorch). It is best to install PyTorch first with a separate command and then install the requirements in requirements.txt.
 
-1. PyTorch. See instructions here (https://pytorch.org/get-started/locally/)
-2. Install requirements.txt (run `pip install -r requirements.txt`)
+### Install steps:
 
+1. Make sure pip is updated (For Windows `python.exe -m pip install --upgrade pip`)
+2. Install PyTorch (see https://pytorch.org/get-started/locally/)
+3. Install requirements.txt (`pip install -r requirements.txt`)
+
+HUOM: PyTorch is not listed in requirements.txt, but the version used is `2.6.0+cul26`.
