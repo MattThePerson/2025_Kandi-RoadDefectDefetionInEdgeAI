@@ -25,8 +25,8 @@ random.seed(0)
 
 
 def main(args: argparse.Namespace):
-    dataset_unprocessed = r'..\datasets\RDD2022'
-    dataset_processed =   r'..\datasets\RDD2022_preprocessed' # location of processed dataset
+    dataset_unprocessed = r'datasets\RDD2022'
+    dataset_processed =   r'datasets\RDD2022_PP' # location of processed dataset
 
     subfolders = list(Path(dataset_unprocessed).glob('*'))
 

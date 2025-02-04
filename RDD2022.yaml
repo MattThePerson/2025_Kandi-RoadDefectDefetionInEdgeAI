@@ -1,5 +1,5 @@
 # YAML for RDD2022_preprocessed dataset
-path: ../datasets/RDD2022_preprocessed # dataset root dir
+path: RDD2022_PP # dataset root dir
 train: images/train
 val: images/val
 test: images/test
