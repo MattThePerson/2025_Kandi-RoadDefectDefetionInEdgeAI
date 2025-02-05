@@ -25,10 +25,13 @@ random.seed(0)
 
 
 def main(args: argparse.Namespace):
-    dataset_unprocessed = r'datasets\RDD2022'
-    dataset_processed =   r'datasets\RDD2022_PP' # location of processed dataset
+    dataset_unprocessed = os.path.join('datasets', 'RDD2022')
+    dataset_processed = os.path.join('datasets', 'RDD2022_PP') # location of processed dataset
 
-    subfolders = list(Path(dataset_unprocessed).glob('*'))
+    unprocessed_path = Path(dataset_unprocessed)
+
+
+    subfolders = list(unprocessed_path.glob('*'))
 
     print('Preprocessing RDD2022 dataset into folder: "{}"'.format(dataset_processed))
 
@@ -85,8 +88,10 @@ def preprocess_subfolder(
             labels_path = os.path.join( labels_dirname, f'{img.stem}.txt' )
             labels_str = xml_file_to_yolo_label_string(xml_path)
             if not test_run:
-                with open(labels_path, 'w') as f:
-                    f.write(labels_str)
+                # only create label file if a label exists
+                if labels_str:
+                    with open(labels_path, 'w') as f:
+                        f.write(labels_str)
                 copy_file(str(img), images_dirname, copy_file=copy_files)
         print()
     
@@ -113,22 +118,22 @@ def get_image_xml_path(imagepath: Path) -> str:
 
 label_map = {
     "D00" :  0,
-    "D01" :  1,
-    "D0w0" :  2,
-    "D10" :  3,
-    "D11" :  4,
-    "D20" :  5,
-    "D40" :  6,
-    "D43" :  7,
-    "D44" :  8,
-    "D50" :  9,
-    "Repair" :  10,
-    "Block crack" :  11,
+    #"D01" :  1,
+    #"D0w0" :  2,
+    "D10" :  1,
+    #"D11" :  4,
+    "D20" :  2,
+    "D40" :  4,
+    #"D43" :  7,
+    #"D44" :  8,
+    #"D50" :  9,
+    #"Repair" :  10,
+    #"Block crack" :  11,
 }
 
 
 def xml_file_to_yolo_label_string(xml_filename: str) -> str:
-    global label_map
+    #global label_map
     try:
         tree = ET.parse(xml_filename)
         root = tree.getroot()
@@ -138,16 +143,22 @@ def xml_file_to_yolo_label_string(xml_filename: str) -> str:
         for object in root.findall('object'):
             name = object.find('name').text # type: ignore
             id_ = label_map.get(name) # type: ignore
-            if id_ == None:
+
+            if name is None:
                 raise Exception('Label name without id: "{}"'.format(name))
-            bbox = object.find('bndbox')
-            sizes = []
-            for tag in ['xmin', 'ymin', 'xmax', 'ymax']:
-                sizes.append(float(bbox.find(tag).text)) # type: ignore
-            x_center, y_center, width, height = format_bndbox_to_yolo(wid, hei, *sizes) # type: ignore
-            det = f'{id_} {x_center} {y_center} {width} {height}'
-            detection_strings.append(det)
+
+            # only labels D00, D10, D20, D40 are relevant for our project
+            if name in (['D00', 'D10', 'D20', 'D40']):
+                bbox = object.find('bndbox')
+                sizes = []
+                for tag in ['xmin', 'ymin', 'xmax', 'ymax']:
+                    sizes.append(float(bbox.find(tag).text)) # type: ignore
+                x_center, y_center, width, height = format_bndbox_to_yolo(wid, hei, *sizes) # type: ignore
+                det = f'{id_} {x_center} {y_center} {width} {height}'
+                detection_strings.append(det)
+
         return '\n'.join(detection_strings)
+
     except Exception as e:
         print('\n\nERROR Parsing XML:', e)
         print('content:\n')
