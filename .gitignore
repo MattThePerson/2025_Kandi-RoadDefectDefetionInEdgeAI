@@ -1,9 +1,10 @@
-datasets/
-runs/
-weights/
-temp/
 .vscode/
 *venv*/
+temp/
 *.pt
 testing*
 bus.jpg
+runs/
+weights/
+datasets/
+data/
