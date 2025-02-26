@@ -169,6 +169,11 @@ def preprocess_subfolder_json(
     # read all images in 'train' folder ()
     annotations_folder = dataset / 'train' / 'ann'
     annotations = list(annotations_folder.glob('*'))
+
+    # glob does not guarantee that the list is always in the same order
+    # sort the list of images for reproducibility
+    annotations.sort()
+
     print('Found {:_} images'.format(len(annotations)))
     if portion < 1.0:
         annotations = annotations[:int(len(annotations) * portion)]
@@ -269,7 +274,8 @@ def json_file_to_yolo_label_string(file_path: Path) -> str:
     return objects.join(labels)
 
 
-# region helpers
+sorted_images_hash = 0
+shuffled_images_hash = 0
 
 def split_array_json(items, split: Any):
 
@@ -289,8 +295,27 @@ def split_array_json(items, split: Any):
     train_val_test = ([], [], [])
 
     items = items.copy()
+
+    # sorted_hash = 5381
+    # for i, item in enumerate(items):
+    #     sorted_hash = (((sorted_hash << 5) + sorted_hash) + int(item.name[-15:-9]) ) % 2**64
+    # print(f"Sorted list hash: {str(sorted_hash)[-16:]}")
+
+    # shuffle items
     random.shuffle(items)
 
+    shuffled_hash = 5381
+    for i, item in enumerate(items):
+        shuffled_hash = (((shuffled_hash << 5) + shuffled_hash) + int(item.name[-15:-9]) ) % 2**64
+    # print(f"Shuffled list hash: {str(shuffled_hash)}")
+
+    # save the hashes for the .yaml file
+    # global sorted_images_hash
+    # sorted_images_hash = str(sorted_hash)
+    global shuffled_images_hash
+    shuffled_images_hash = str(shuffled_hash)
+
+    # place items into train, val and test
     for path in items:
         # E.g. 'China_Drone' or 'Norway'
         image_source = path.name.rsplit('_', 1)[0]
@@ -394,13 +419,14 @@ def create_yaml(args: argparse.Namespace):
     filename = args.name + '.yaml'
 
     # save the .yaml file in the current working directory
-    save_location = os.getcwd()
+    save_location = 'YAML/'
 
     comments = (f"# This is a YAML file for the dataset {args.name}\n"
                 f"# Created: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
                 f"# The dataset was made using the following arguments:\n# ")
     comments += ' '.join(f'--{key} {value}' for key, value in vars(args).items())
-    comments += '\n\n'
+    comments += '\n'
+    comments += f'# dataset_images_hash: {shuffled_images_hash} \n\n'
 
     data = {
         'path': args.name,  # dataset root dir
@@ -426,11 +452,11 @@ if __name__ == '__main__':
                         help='File path of the data you want to process. This should be the path/to/RDD2022.')
     parser.add_argument('--test-run', action='store_true',
                         help='Dont move images or create labels files (still creates directories)')
-    parser.add_argument('--fraction', type=float, default=1.0,
+    parser.add_argument('-f', '--fraction', type=float, default=1.0,
                         help='The fraction of the dataset to pre-process, value must between 0 - 1.0')
     parser.add_argument('--move-files', action='store_true', help='Moves images instead of copying images')
     parser.add_argument('--xml', action='store_true', help='Use this if the data is in the xml format, NOT json')
-    parser.add_argument('-y', '--yes', action='store_true',
+    parser.add_argument('-y', '--yes', default=False, action='store_true',
                         help='Automatically answer YES to all questions with this option enabled.')
     parser.add_argument('-n', '--name', type=str, default='RDD2022_PP', help='Give a descriptive (file)name for the preprocessed dataset.')
 
