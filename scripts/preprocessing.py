@@ -90,6 +90,7 @@ def main(args: argparse.Namespace):
             portion=args.fraction,
             copy_files=(not args.move_files),
             test_run=args.test_run,
+            filter_terms=args.exclude.split(' ')
         )
         handled_count += images_handled
         time.sleep(0.112)
@@ -155,11 +156,16 @@ def preprocess_subfolder_json(
         train_val_test_split: Any = (80, 10, 10),
         portion: float = 1.0,  # portion (0 to 1) of dataset to copy/move and preprocess
         test_run: bool = False,
+        filter_terms=None
 ):
     """
 
     NOTE: this function DELETES previous preprocessed folders with the same name
     """
+    if filter_terms is None:
+        filter_terms = []
+    filter_terms = set(filter_terms)
+
     # create / replace old preprocessed folder
     if dataset_processed.exists():
         shutil.rmtree(dataset_processed)
@@ -169,6 +175,20 @@ def preprocess_subfolder_json(
     # read all images in 'train' folder ()
     annotations_folder = dataset / 'train' / 'ann'
     annotations = list(annotations_folder.glob('*'))
+
+    print(f"Filter terms: {filter_terms}")
+    # remove files containing filter terms
+    filtered_annotations = []
+    for ann in annotations:
+        include = True
+        for term in filter_terms:
+            if ann.name.find(term) > -1:
+                include = False
+                break
+        if include:
+            filtered_annotations.append(ann)
+    print(f"Filtered out {len(annotations) - len(filtered_annotations)} images from the dataset.")
+    annotations = filtered_annotations
 
     # glob does not guarantee that the list is always in the same order
     # sort the list of images for reproducibility
@@ -459,6 +479,8 @@ if __name__ == '__main__':
     parser.add_argument('-y', '--yes', default=False, action='store_true',
                         help='Automatically answer YES to all questions with this option enabled.')
     parser.add_argument('-n', '--name', type=str, default='RDD2022_PP', help='Give a descriptive (file)name for the preprocessed dataset.')
+    parser.add_argument('--exclude', type=str, help='Exclude images from the dataset containing the specified filter terms. '
+                                                    'Example usage: --exclude "China_Drone India" filters out all images whose filenames contain China_Drone or India')
 
     args = parser.parse_args()
 
