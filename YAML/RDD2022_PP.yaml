@@ -1,0 +1,15 @@
+# This is a YAML file for the dataset RDD2022_PP
+# Created: 2025-11-25 15:59:15
+# The dataset was made using the following arguments:
+# --path A:\datasets\kandi\RDD2022_figshare --test_run False --fraction 1.0 --move_files False --xml True --yes False --name RDD2022_PP
+# dataset_images_hash: 0 
+
+names:
+  0: D00
+  1: D10
+  2: D20
+  3: D40
+path: RDD2022_PP
+test: images/test
+train: images/train
+val: images/val
