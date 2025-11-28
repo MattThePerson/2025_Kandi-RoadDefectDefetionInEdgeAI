@@ -90,7 +90,7 @@ def main(args: argparse.Namespace):
             portion=args.fraction,
             copy_files=(not args.move_files),
             test_run=args.test_run,
-            filter_terms=args.exclude.split(' ')
+            filter_terms=args.exclude
         )
         handled_count += images_handled
         time.sleep(0.112)
@@ -164,6 +164,8 @@ def preprocess_subfolder_json(
     """
     if filter_terms is None:
         filter_terms = []
+    else:
+        filter_terms = args.exclude.split(' ')
     filter_terms = set(filter_terms)
 
     # create / replace old preprocessed folder
