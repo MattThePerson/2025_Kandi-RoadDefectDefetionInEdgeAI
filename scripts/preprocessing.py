@@ -45,15 +45,21 @@ def main(args: argparse.Namespace):
     start = time.time()
 
     ### XML ###
-    if args.xml:  # data is in xml format
+    if not args.json:  # data is in xml format
 
-        dataset_processed = dataset.parent / 'RDD2022_PP'
+        dataset_processed = dataset.parent / args.name
         if dataset_processed.exists() and not args.yes:
             answer = input(f'A preprocessed dataset with this name already exists: {dataset_processed}\n'
                            f'Do you want to replace the previous preprocessed dataset? Y/n\n')
             if answer != 'Y' and str.lower(answer) != 'yes':
                 print('Answer was not "Y" or "yes", exiting the program.')
                 sys.exit(1)
+            else:
+                # create / replace old preprocessed folder
+                if dataset_processed.exists():
+                    shutil.rmtree(dataset_processed)
+                    print(f"Deleted old dataset with the same name: {dataset_processed}")
+                os.makedirs(dataset_processed)
         print(f'Preprocessing RDD2022 dataset into folder: "{dataset_processed}"')
 
         subfolders = list(dataset.glob('*'))
@@ -67,6 +73,7 @@ def main(args: argparse.Namespace):
                 portion=args.fraction,
                 copy_files=(not args.move_files),
                 test_run=args.test_run,
+                image_list=args.image_list
             )
             handled_count += images_handled
             time.sleep(0.112)
@@ -82,6 +89,12 @@ def main(args: argparse.Namespace):
             if answer != 'Y' and str.lower(answer) != 'yes':
                 print('Answer was not "Y" or "yes", exiting the program.')
                 sys.exit(1)
+            else:
+                # create / replace old preprocessed folder
+                if dataset_processed.exists():
+                    shutil.rmtree(dataset_processed)
+                    print(f"Deleted old dataset with the same name: {dataset_processed}")
+                os.makedirs(dataset_processed)
 
         # subfolder = dataset / 'train'
         images_handled = preprocess_subfolder_json(
@@ -113,6 +126,7 @@ def preprocess_subfolder_xml(
         train_val_test_split: Any = (80, 10, 10),
         portion: float = 1.0,  # portion (0 to 1) of dataset to copy/move and preprocess
         test_run: bool = False,
+        image_list: Path = None
 ):
     """ Preprocess the data in a given subfolder in the RDD2022 dataset """
     # read all images in 'train' folder ()
@@ -122,12 +136,30 @@ def preprocess_subfolder_xml(
     if portion < 1.0:
         images = images[:int(len(images)*portion)]
         print('Limiting images to {:_} ({:.0f}%)'.format(len(images), portion*100))
-    
-    # splits images into train-val-test by given split
-    train_imgs, val_imgs, test_imgs = split_array(images, train_val_test_split)
-    
-    # moves/copies images into target folder and 
-    dataset_split = { 'train': train_imgs, 'val': val_imgs, 'test': test_imgs }
+
+    # create image split from a predefined list
+    if image_list:
+        dataset_dict = read_images_from_list(Path(image_list))
+        train_imgs = []
+        val_imgs = []
+        test_imgs = []
+        for img in images:
+            if dataset_dict[img.name] == 'train':
+                train_imgs.append(img)
+            elif dataset_dict[img.name] == 'val':
+                val_imgs.append(img)
+            elif dataset_dict[img.name] == 'test':
+                test_imgs.append(img)
+
+        dataset_split = { 'train': train_imgs, 'val': val_imgs, 'test': test_imgs }
+    # create image split randomly
+    else:
+        # splits images into train-val-test by given split
+        train_imgs, val_imgs, test_imgs = split_array(images, train_val_test_split)
+
+        # moves/copies images into target folder and
+        dataset_split = { 'train': train_imgs, 'val': val_imgs, 'test': test_imgs }
+
     for type, imgs in dataset_split.items():
         images_dirname = os.path.join( str(target), 'images', type )
         labels_dirname = os.path.join( str(target), 'labels', type )
@@ -148,6 +180,23 @@ def preprocess_subfolder_xml(
 
     return len(images)
 
+def read_images_from_list(image_folder: Path):
+    """
+
+    @param image_folder: a folder containing three text files: train.txt, test.txt and val.txt containing a list of image names, one image per line
+    @return: a dictionary of images, where key = "image_name.jpg" and value is "train", "val", "test"
+    """
+    def read_file(file):
+        with open(image_folder.joinpath(file), "r") as f:
+            images = f.read().splitlines()
+        f.close()
+        return images
+
+    image_dict = dict()
+    image_dict.update({image: "train" for image in read_file("train.txt")})
+    image_dict.update({image: "val" for image in read_file("val.txt")})
+    image_dict.update({image: "test" for image in read_file("test.txt")})
+    return image_dict
 
 def preprocess_subfolder_json(
         dataset: Path,
@@ -159,20 +208,12 @@ def preprocess_subfolder_json(
         filter_terms=None
 ):
     """
-
-    NOTE: this function DELETES previous preprocessed folders with the same name
     """
     if filter_terms is None:
         filter_terms = []
     else:
         filter_terms = args.exclude.split(' ')
     filter_terms = set(filter_terms)
-
-    # create / replace old preprocessed folder
-    if dataset_processed.exists():
-        shutil.rmtree(dataset_processed)
-        print(f"Deleted old dataset with the same name: {dataset_processed}")
-    os.makedirs(dataset_processed)
 
     # read all images in 'train' folder ()
     annotations_folder = dataset / 'train' / 'ann'
@@ -477,13 +518,13 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--fraction', type=float, default=1.0,
                         help='The fraction of the dataset to pre-process, value must between 0 - 1.0')
     parser.add_argument('--move-files', action='store_true', help='Moves images instead of copying images')
-    parser.add_argument('--xml', action='store_true', help='Use this if the data is in the xml format, NOT json')
+    parser.add_argument('--json', action='store_true', help='Use this if the data is in the json format')
     parser.add_argument('-y', '--yes', default=False, action='store_true',
                         help='Automatically answer YES to all questions with this option enabled.')
     parser.add_argument('-n', '--name', type=str, default='RDD2022_PP', help='Give a descriptive (file)name for the preprocessed dataset.')
     parser.add_argument('--exclude', type=str, help='Exclude images from the dataset containing the specified filter terms. '
                                                     'Example usage: --exclude "China_Drone India" filters out all images whose filenames contain China_Drone or India')
-
+    parser.add_argument('-l', '--image-list', type=str, help='Create a preprocessed image set from an image list. Give the file path of a folder with the files train.txt, val.txt and test.txt.')
     args = parser.parse_args()
 
     print()
