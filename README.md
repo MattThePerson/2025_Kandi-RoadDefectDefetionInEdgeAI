@@ -57,6 +57,17 @@ Suppose you want to run the script `scripts/preprocessing.py`. Make sure you're 
 run: `uv run scripts/preprocessing.py`
 
 
+### (Optional) Verify python executable path
+
+You should make sure python points to the local python interpreter. Make sure the python path points to the local `.venv` folder.
+
+1. With activated venv:     
+    Windows: `Get-Command python`   
+    Linux: `which python`
+2. With uv  
+    `uv python find`
+
+
 ### (Optional) Verify PyTorch install
 
 To verify PyTorch works, and that CUDA is available (if installed CUDA version), you can create and run a demo python script
