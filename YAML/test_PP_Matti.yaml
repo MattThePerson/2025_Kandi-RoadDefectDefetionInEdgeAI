@@ -1,0 +1,15 @@
+# This is a YAML file for the dataset test_PP_Matti
+# Created: 2026-01-11 18:06:27
+# The dataset was made using the following arguments:
+# --path A:\datasets\kandi\RDD2022_figshare --test_run False --fraction 1.0 --move_files False --json False --yes False --name test_PP --exclude None --image_list image_list_Matti
+# dataset_images_hash: 0 
+
+names:
+  0: D00
+  1: D10
+  2: D20
+  3: D40
+path: test_PP_Matti
+test: images/test
+train: images/train
+val: images/val
