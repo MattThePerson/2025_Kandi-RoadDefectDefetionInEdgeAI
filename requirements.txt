@@ -1,2 +1,4 @@
-ultralytics==8.3.70
-ipykernel==6.29.5
+# python 3.10 <= 3.14
+ultralytics
+ipykernel
+jupyter
