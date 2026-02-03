@@ -1,12 +1,20 @@
+
+# general
 .vscode/
-*venv*/
-temp/
+.venv/
+__pycache__
+uv.lock
+.*/
+
+# custom
 *.pt
-testing*
-bus.jpg
+ultralytics/
 runs/
 weights/
 datasets/
 data/
+testing-*
+*.zip
 
-*-Matti*
+# possibly temporary
+runs_puhti/
