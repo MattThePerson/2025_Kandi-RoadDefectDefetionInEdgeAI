@@ -171,10 +171,9 @@ def preprocess_subfolder_xml(
             labels_path = os.path.join( labels_dirname, f'{img.stem}.txt' )
             labels_str = xml_file_to_yolo_label_string(xml_path)
             if not test_run:
-                # only create label file if a label exists
-                if labels_str:
-                    with open(labels_path, 'w') as f:
-                        f.write(labels_str)
+                # always create label file
+                with open(labels_path, 'w') as f:
+                    f.write(labels_str)
                 copy_file(str(img), images_dirname, copy_file=copy_files)
         print()
 
