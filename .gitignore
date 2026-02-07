@@ -15,6 +15,7 @@ datasets/
 data/
 testing-*
 *.zip
+.~lock.*#
 
 # possibly temporary
 runs_puhti/
