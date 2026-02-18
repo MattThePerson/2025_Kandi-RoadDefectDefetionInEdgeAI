@@ -1,7 +1,7 @@
 # This is a YAML file for the dataset test_PP_Matti
-# Created: 2026-01-11 18:06:27
+# Created: 2026-02-18 17:34:38
 # The dataset was made using the following arguments:
-# --path A:\datasets\kandi\RDD2022_figshare --test_run False --fraction 1.0 --move_files False --json False --yes False --name test_PP --exclude None --image_list image_list_Matti
+# --path A:\datasets\kandi\RDD2022_figshare --test_run False --fraction 1.0 --move_files False --json False --yes False --name test_PP_Matti --exclude None --image_list ./image_list
 # dataset_images_hash: 0 
 
 names:
