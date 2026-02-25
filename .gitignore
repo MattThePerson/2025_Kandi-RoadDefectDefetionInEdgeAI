@@ -16,6 +16,8 @@ data/
 testing-*
 *.zip
 .~lock.*#
+*_Matti.md
 
 # possibly temporary
 runs_puhti/
+
